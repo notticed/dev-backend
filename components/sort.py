@@ -86,9 +86,8 @@ class Sort:
       }))
     # the final list with results
     data = []
-    print(len(self.data))
-    if len(self.data) > 20:
-      for n in range(0, math.ceil(len(self.data)/20)):
+    if len(self.data) > self.limit:
+      for n in range(0, math.ceil(len(self.data)/self.limit)):
         data.append(list(self.data[0:self.limit]))
         del self.data[0:self.limit]
       self.data = data
