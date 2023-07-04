@@ -92,16 +92,33 @@ class Sort:
         del self.data[0:self.limit]
       self.data = data
     
-    try:
-      return self.data[self.page]
-    except:
-      return {'msg': 'Page not found'}
+      try:
+        return self.data[self.page]
+      except:
+        return {'msg': 'Page not found'}
+    return self.data
   
+  def sortUsers(self):
+    self.db.create_index([('nick' , pymongo.TEXT)])
+    if len(self.search):
+      self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }))
+    
+    data = []
+    if len(self.data) > self.limit:
+      for n in range(0, math.ceil(len(self.data)/self.limit)):
+        data.append(list(self.data[0:self.limit]))
+        del self.data[0:self.limit]
+      self.data = data
+      try:
+        return self.data[self.page]
+      except:
+        return {'msg': 'Page not found'}
+    return self.data
 
 
   def get_sort(self):
     if self.db_type == 'users':
-      pass
+      return self.sortUsers()
     elif self.db_type == 'posts':
       return self.sortPosts()
     elif self.db_type == 'comments':
