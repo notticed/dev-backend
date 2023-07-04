@@ -40,7 +40,7 @@ now_time = str(datetime.now()).split(" ")[0].split("-")
 now_time_iso = datetime.now().isoformat()
 
 
-query_params = {"search": (str, ''), "sortBy": (str, ''), "page": (int, 0), "limit": (int, 20)}
+query_params = {"search": (str, ''), "sortBy": (str, ''), "page": (int, 1), "limit": (int, 20)}
 query_model = create_model("Query", **query_params)
 
 def convert_data(db):
@@ -62,6 +62,7 @@ class Sort:
     # the list with output data
     self.data = convert_data(self.db.find())
   
+      # self.data = convert_data(self.db.find({ "$text": { "$search": // } }).sort('date', pymongo.ASCENDING))
 
   def sortPosts(self):
     sortBy = {
@@ -71,9 +72,9 @@ class Sort:
     }  
     self.db.create_index([('title' , pymongo.TEXT), ('content' , pymongo.TEXT), ('date', pymongo.TEXT)])
 
+
     if len(self.search) and not len(self.sortBy):
       self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }).sort('date', pymongo.ASCENDING))
-
     if not len(self.search) and len(self.sortBy):
       self.data = convert_data(self.db.find({'date': sortBy[self.sortBy]}))
 
@@ -86,17 +87,17 @@ class Sort:
       }))
     # the final list with results
     data = []
-    if len(self.data) > self.limit:
-      for n in range(0, math.ceil(len(self.data)/self.limit)):
-        data.append(list(self.data[0:self.limit]))
-        del self.data[0:self.limit]
-      self.data = data
+    for n in range(0, math.ceil(len(self.data)/self.limit)):
+      data.append(list(self.data[0:self.limit]))
+      del self.data[0:self.limit]
+    self.data = data
+  
+    try:
+      return self.data[self.page-1]
+    except:
+      return {'msg': 'Page not found'}
     
-      try:
-        return self.data[self.page]
-      except:
-        return {'msg': 'Page not found'}
-    return self.data
+  
   
   def sortUsers(self):
     self.db.create_index([('nick' , pymongo.TEXT)])
@@ -104,16 +105,14 @@ class Sort:
       self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }))
     
     data = []
-    if len(self.data) > self.limit:
-      for n in range(0, math.ceil(len(self.data)/self.limit)):
-        data.append(list(self.data[0:self.limit]))
-        del self.data[0:self.limit]
-      self.data = data
-      try:
-        return self.data[self.page]
-      except:
-        return {'msg': 'Page not found'}
-    return self.data
+    for n in range(0, math.ceil(len(self.data)/self.limit)):
+      data.append(list(self.data[0:self.limit]))
+      del self.data[0:self.limit]
+    self.data = data
+    try:
+      return self.data[self.page-1]
+    except:
+      return {'msg': 'Page not found'}
 
 
   def get_sort(self):
@@ -126,12 +125,14 @@ class Sort:
     else:
       return []
 
-
-
-@app.get('/api/sort/{db}')
-def sort(db: str, params: query_model = Depends()):
+@app.get('/api/{db}', tags=['sort'])
+async def all(db: str, res: Response, params: query_model = Depends()):
   sort = Sort(db, params.dict())
+  number = len(sort.data)
+  res.set_cookie(
+    key='number',
+    value=number
+  )
   return sort.get_sort()
-
 
 

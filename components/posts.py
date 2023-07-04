@@ -3,10 +3,11 @@ from payloads import post_payload
 from schemes import Post
 from tokens import *
 
+
 crud_posts = CRUD(posts)
 # crud_comments = CRUD(comments)
 
-@app.post('/api/post', tags=['posts'])
+@app.post('/api/posts', tags=['posts'])
 def create_post(post: Post, req: Request, res: Response):
   TOKENS = token.tokens_required(res, req)
   if TOKENS:
@@ -17,7 +18,7 @@ def create_post(post: Post, req: Request, res: Response):
       return {'msg': 'Something went wrong'}
   return {'msg': 'Log in before'}
 
-@app.delete('/api/post', tags=['posts'])
+@app.delete('/api/posts', tags=['posts'])
 def delete_post(post_id, req: Request, res: Response):
   TOKENS = token.tokens_required(res, req)
   if TOKENS and TOKENS['access'] == str(crud_posts.get_id(post_id)['author']):
@@ -32,7 +33,7 @@ def delete_post(post_id, req: Request, res: Response):
 def update_post(post_id):
   pass
 
-@app.post('/api/post/like', tags=['posts'])
+@app.post('/api/posts/like', tags=['posts'])
 def like_post(req: Request, post_id, res: Response):
   TOKENS = token.tokens_required(res, req)
   if TOKENS:
@@ -42,7 +43,7 @@ def like_post(req: Request, post_id, res: Response):
       return {'msg': 'Some error'}
   return {'msg': 'Log in before'}
 
-@app.post('/api/post/dislike', tags=['posts'])
+@app.post('/api/posts/dislike', tags=['posts'])
 def dislike_post(req: Request, post_id, res: Response):
   TOKENS = token.tokens_required(res, req)
   if TOKENS:
@@ -52,10 +53,6 @@ def dislike_post(req: Request, post_id, res: Response):
       return {'msg': 'Some error'}
   return {'msg': "Log in before"}
 
-
-@app.get('/api/post', tags=['posts'])
-async def all_posts():
-  return crud_posts.get_all()
 
 @app.get('/api/post/{post_id}', tags=['posts'])
 async def post_id(post_id):
