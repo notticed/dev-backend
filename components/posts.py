@@ -13,7 +13,7 @@ def create_post(post: Post, req: Request, res: Response):
   if TOKENS:
     try:
       crud_posts.create(post_payload(TOKENS['access'], post.title, post.content))
-      return {'msg': 'Post was published'}
+      return {'msg': 'd'}
     except:
       return {'msg': 'Something went wrong'}
   return {'msg': 'Log in before'}
@@ -40,7 +40,7 @@ def like_post(req: Request, post_id, res: Response):
     try:
       return crud_posts.like(TOKENS['access'], post_id)
     except: 
-      return {'msg': 'Some error'}
+      return {'msg': 'Something went wrong'}
   return {'msg': 'Log in before'}
 
 @app.post('/api/posts/dislike', tags=['posts'])
@@ -50,7 +50,7 @@ def dislike_post(req: Request, post_id, res: Response):
     try:
       return crud_posts.dislike(TOKENS['access'], post_id)
     except:
-      return {'msg': 'Some error'}
+      return {'msg': 'Something went wrong'}
   return {'msg': "Log in before"}
 
 
@@ -59,4 +59,4 @@ async def post_id(post_id):
   try:
     return crud_posts.get_id(post_id)
   except:
-    return "Post not found"
+    return "Post was not found"

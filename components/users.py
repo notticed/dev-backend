@@ -21,5 +21,5 @@ def user_nick(nick):
     result["_id"] = str(result["_id"])
     return result
   except:
-    return "User not found"
+    return "User was not found"
 

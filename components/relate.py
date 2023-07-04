@@ -27,8 +27,8 @@ def follow(author_id, req: Request, res: Response):
       subs.update_one({'author': str(TOKEN['access'])}, { "$set": { 'subscribers': follower_subscribers } }, upsert=False)  
       return {'msg': 'You unfollowed'}
     else:
-      return {'msg': 'Some error'}
-  return {'msg': 'Some error'}
+      return {'msg': 'Something went wrong'}
+  return {'msg': 'Something went wrong'}
 
 
 @app.get('/api/follow', tags=['relate'])
@@ -38,7 +38,7 @@ def followers(author_id):
     res['_id'] = str(res['_id'])
     return res
   except:
-    return {'msg': 'Some error'}
+    return {'msg': 'Something went wrong'}
 
 
 

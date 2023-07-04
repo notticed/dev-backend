@@ -21,7 +21,7 @@ def delete_comment(req: Request, comment_id, res: Response):
   if TOKENS and TOKENS['access'] == str(crud_comments.get_id(comment_id)['_id']):
     try:
       crud_comments.delete(comment_id)
-      return {'msg': 'Post was deleted'}
+      return {'msg': 'Comment was deleted'}
     except:
       return {'msg':'Something went wrong'}
 
@@ -40,7 +40,7 @@ def like_comment(req: Request, comment_id, res: Response):
     try:
       return crud_comments.like(TOKENS['access'], comment_id)
     except: 
-      return {'msg': 'Some error'}
+      return {'msg': 'Something went wrong'}
   return {'msg': 'Log in before'}
   
 @app.post('/api/comment/dislike', tags=['comments'])
@@ -50,7 +50,7 @@ def dislike_comment(req: Request, comment_id, res: Response):
     try:
       return crud_comments.dislike(TOKENS['access'], comment_id)
     except: 
-      return {'msg': 'Some error'}
+      return {'msg': 'Something went wrong'}
   return {'msg': 'Log in before'}
   
 @app.get('/api/comment/post_id', tags=['comments'])
@@ -60,3 +60,4 @@ def comment_by_post(post_id):
     if n['post'] == post_id:
       comments.append(n)
   return comments
+  

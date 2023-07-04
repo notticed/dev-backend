@@ -41,11 +41,11 @@ def login(login: Login, req: Request, res: Response):
       res.set_cookie(key="access_token_cookie", value=token.create_access_token(str(payload['_id'])))
       res.set_cookie(key="refresh_token_cookie", value=token.create_refresh_token())
 
-      return {"msg": "Successfully login"}
+      return {"msg": "Successfull logged in"}
     
-    return {'msg': 'Creditionals are bad'}
+    return {'msg': 'Login or password is incorrect'}
   
-  return {'msg': 'You are logged now'}
+  return {'msg': 'You are already logged in'}
 
 # LOGOUT METHOD
 @app.get('/api/logout', tags=['auth'])
@@ -56,7 +56,7 @@ def logout (Authorize: AuthJWT = Depends()):
   """
 
   Authorize.unset_jwt_cookies()
-  return {"msg": "OK"}
+  return {"msg": "Tokens have been deleted"}
 
 
 # REGISTRATION METHOD
@@ -88,10 +88,10 @@ def register(req:Request, user: Registration, res: Response):
       
         crud_relate.create(relate_payload(str(payload['_id'])))
 
-        return {"msg": "Successfully register"}
+        return {"msg": "Successful registration"}
       
-      return {'msg': 'Nick are using now'}
+      return {'msg': 'Nickname already exists'}
     
-    return {'msg': 'Email are using now'}
+    return {'msg': 'Email already exists'}
   
 
