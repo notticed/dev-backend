@@ -63,5 +63,3 @@ async def post_id(post_id):
     return crud_posts.get_id(post_id)
   except:
     return "Post not found"
-
-

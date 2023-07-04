@@ -1,11 +1,24 @@
-FROM python:3.9-slim
+# Используем базовый образ Python
+FROM python:3.9
 
-WORKDIR /develop-blog
+# Устанавливаем переменные среды
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
 
-COPY requirements.txt ./
+# Устанавливаем рабочую директорию внутри контейнера
+WORKDIR /app
 
+# Копируем зависимости проекта
+COPY requirements.txt /app/
+
+# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Копируем код приложения
+COPY . /app/
 
-CMD ['uvicorn', 'server:app', '--host', '0.0.0.0', '--port', '8000']
+# Открываем порт, который будет использоваться Uvicorn
+EXPOSE 8000
+
+# Запускаем Uvicorn при старте контейнера
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]

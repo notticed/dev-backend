@@ -40,7 +40,7 @@ now_time = str(datetime.now()).split(" ")[0].split("-")
 now_time_iso = datetime.now().isoformat()
 
 
-query_params = {"search": (str, ''), "sortBy": (str, ''), "page": (int, 1), "limit": (int, 20)}
+query_params = {"search": (str, ''), "sortBy": (str, ''), "page": (int, 0), "limit": (int, 20)}
 query_model = create_model("Query", **query_params)
 
 def convert_data(db):
@@ -50,7 +50,7 @@ def convert_data(db):
       data.append(to_str)
     return data
 
-
+# the main class with sort methods
 class Sort:
   def __init__(self, db, params):
     self.db_type = str(db)
@@ -62,37 +62,42 @@ class Sort:
     # the list with output data
     self.data = convert_data(self.db.find())
   
-  
 
   def sortPosts(self):
-    print(now_time_iso)
-    print(f'{now_time[0]}-01-01T00:00:00.000000')
-    # sortBy = {
-    #   'date_year': convert_data(self.db.find({'date': {'$gt': f'{now_time[0]}-01-01T00:00:00.000000', '$lt': now_time_iso}})),
-    #   'date_month': convert_data(self.db.find({'date': {'$gt': f'{now_time[0]}-{now_time[1]}-01T00:00:00.000000', '$lt': now_time_iso}})),
-    #   'date_day': convert_data(self.db.find({'date': {'$gt': f'{now_time[0]}-{now_time[1]}-{now_time[2]}T00:00:00.000000', '$lt': now_time_iso}}))
-    # }  
-    #
+    sortBy = {
+      'date_year': {'$gt': f'{now_time[0]}-01-01T00:00:00.000000', '$lt': now_time_iso},
+      'date_month': {'$gt': f'{now_time[0]}-{now_time[1]}-01T00:00:00.000000', '$lt': now_time_iso},
+      'date_day': {'$gt': f'{now_time[0]}-{now_time[1]}-{now_time[2]}T00:00:00.000000', '$lt': now_time_iso}
+    }  
     self.db.create_index([('title' , pymongo.TEXT), ('content' , pymongo.TEXT), ('date', pymongo.TEXT)])
 
-    
-    # self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }).sort('date', pymongo.ASCENDING))
-    
-    if self.sortBy == 'date_year':
+    if len(self.search) and not len(self.sortBy):
+      self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }).sort('date', pymongo.ASCENDING))
+
+    if not len(self.search) and len(self.sortBy):
+      self.data = convert_data(self.db.find({'date': sortBy[self.sortBy]}))
+
+    if len(self.search) and len(self.sortBy):
       self.data = convert_data(self.db.find({
         '$and': [
           {'$text': { '$search': self.search }},
-          {'date': {'$gt': f'{now_time[0]}-01-01T00:00:00.000000', '$lt': now_time_iso}}
+          {'date': sortBy[self.sortBy]}
         ]
       }))
-
-    return self.data
-
-    # for k in self.data:
-    #   pass
-
-
-    # second step: filtering by date 
+    # the final list with results
+    data = []
+    print(len(self.data))
+    if len(self.data) > 20:
+      for n in range(0, math.ceil(len(self.data)/20)):
+        data.append(list(self.data[0:self.limit]))
+        del self.data[0:self.limit]
+      self.data = data
+    
+    try:
+      return self.data[self.page]
+    except:
+      return {'msg': 'Page not found'}
+  
 
 
   def get_sort(self):
@@ -111,3 +116,6 @@ class Sort:
 def sort(db: str, params: query_model = Depends()):
   sort = Sort(db, params.dict())
   return sort.get_sort()
+
+
+
