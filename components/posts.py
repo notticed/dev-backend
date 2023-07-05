@@ -13,7 +13,7 @@ def create_post(post: Post, req: Request, res: Response):
   if TOKENS:
     try:
       crud_posts.create(post_payload(TOKENS['access'], post.title, post.content))
-      return {'msg': 'd'}
+      return {'msg': 'Post was published'}
     except:
       return {'msg': 'Something went wrong'}
   return {'msg': 'Log in before'}

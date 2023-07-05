@@ -23,7 +23,8 @@ def upload_files(files: List[UploadFile] = File(...)):
         return {'msg': 'Size of image is too big'}
     else:
       return {'msg': 'Upload only images'}
-  return {"msg": f'Your images were uploaded: {links}'}
+  return {"msg": f'Your iqmages were uploaded: {links}'}
+
 
 @app.post('/api/uploadUrl', tags=['image'])
 def upload_url(url, res: Response, req: Request):

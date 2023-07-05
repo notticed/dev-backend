@@ -11,12 +11,12 @@ def user_payload(fname, lname, nick, email, password):
   }
   return user
 
-def post_payload(author_id, title, content):
+def post_payload(author_id, title, content: list):
   post = {
     "author": author_id,
     'date': datetime.now().isoformat(),
     'title': title,
-    'content': content,
+    'blocks': content,
     'likes': [],
     'dislikes': [],
     'views': 0,
