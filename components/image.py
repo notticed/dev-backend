@@ -4,8 +4,8 @@ from tokens import *
 
 app.mount("/uploads", StaticFiles(directory="./uploads"), name="uploads")
 
-@app.post("/api/uploadFile", tags=['image'])
-def uploadFile(files: List[UploadFile] = File(...)):
+@app.post("/api/uploadFiles", tags=['image'])
+def upload_files(files: List[UploadFile] = File(...)):
   links = []
   for file in files:
     if file.content_type in ['image/jpeg', 'image/jpg', 'image/png']:
@@ -26,7 +26,7 @@ def uploadFile(files: List[UploadFile] = File(...)):
   return {"msg": f'Your images were uploaded: {links}'}
 
 @app.post('/api/uploadUrl', tags=['image'])
-def uploadUrl(url, res: Response, req: Request):
+def upload_url(url, res: Response, req: Request):
   TOKENS = token.tokens_required(res, req)
   if TOKENS:
     random_string = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))

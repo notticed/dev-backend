@@ -71,8 +71,6 @@ class Sort:
       'date_day': {'$gt': f'{now_time[0]}-{now_time[1]}-{now_time[2]}T00:00:00.000000', '$lt': now_time_iso}
     }  
     self.db.create_index([('title' , pymongo.TEXT), ('content' , pymongo.TEXT), ('date', pymongo.TEXT)])
-      # self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }).sort('date', pymongo.ASCENDING))
-
 
     if len(self.search) and not len(self.sortBy):
       self.data = convert_data(self.db.find({
@@ -88,7 +86,10 @@ class Sort:
     if len(self.search) and len(self.sortBy):
       self.data = convert_data(self.db.find({
         '$and': [
-          {'$text': { '$search': self.search }},
+          {'$or': [
+            { "title": { "$regex": f"{self.search}", '$options': 'i' } },
+            { "content": { "$regex": f"{self.search}", '$options': 'i' } }
+          ]},
           {'date': sortBy[self.sortBy]}
         ]
       }))
