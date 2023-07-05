@@ -71,10 +71,17 @@ class Sort:
       'date_day': {'$gt': f'{now_time[0]}-{now_time[1]}-{now_time[2]}T00:00:00.000000', '$lt': now_time_iso}
     }  
     self.db.create_index([('title' , pymongo.TEXT), ('content' , pymongo.TEXT), ('date', pymongo.TEXT)])
+      # self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }).sort('date', pymongo.ASCENDING))
 
 
     if len(self.search) and not len(self.sortBy):
-      self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }).sort('date', pymongo.ASCENDING))
+      self.data = convert_data(self.db.find({
+        '$or': [
+          { "title": { "$regex": f"{self.search}", '$options': 'i' } },
+          { "content": { "$regex": f"{self.search}", '$options': 'i' } }
+        ]
+      }))
+
     if not len(self.search) and len(self.sortBy):
       self.data = convert_data(self.db.find({'date': sortBy[self.sortBy]}))
 
@@ -102,7 +109,7 @@ class Sort:
   def sortUsers(self):
     self.db.create_index([('nick' , pymongo.TEXT)])
     if len(self.search):
-      self.data = convert_data(self.db.find({ "$text": { "$search": self.search } }))
+      self.data = convert_data(self.db.find({ "nick": { "$regex": f"^{self.search}" } }))
     
     data = []
     for n in range(0, math.ceil(len(self.data)/self.limit)):

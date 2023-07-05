@@ -5,5 +5,5 @@ from components.users import *
 from components.comments import *
 from components.relate import *
 from components.sort import *
-
+from components.image import *
 

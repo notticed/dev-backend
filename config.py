@@ -1,6 +1,7 @@
 # import all necessary libraries for project
-from fastapi import FastAPI, Depends, Request, Response
+from fastapi import FastAPI, Depends, Request, Response, File, UploadFile
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 # from fastapi_jwt_auth.exceptions import (
@@ -18,11 +19,14 @@ from connection import *
 from fastapi.middleware.cors import CORSMiddleware
 from hashing import *
 from bson.objectid import ObjectId
-from typing import Optional
+from typing import Optional, List
 from datetime import *
+import random
+import string
 import math
 import json
 import base64
+import requests
 
 
 # init the main FastAPI class
