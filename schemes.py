@@ -20,7 +20,6 @@ class Post(BaseModel):
 
 # Scheme for comment
 class Comment(BaseModel):
-  post: str
   content: str
 
 

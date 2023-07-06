@@ -6,14 +6,15 @@ crud_comments = CRUD(comments)
 
 
 @app.post('/api/comment', tags=['comments'])
-def create_comment(comment: Comment, req: Request, res: Response):
+def create_comment(comment: Comment, req: Request, res: Response, post_id):
   TOKENS = token.tokens_required(res, req)
   if TOKENS:
     try:
-      crud_comments.create(comment_payload(TOKENS['access'], comment.post, comment.content))
+      crud_comments.create(comment_payload(TOKENS['access'], post_id, comment.content))
       return {'msg': 'Comment was published'}
     except:
       return {"msg": "Something went wrong"}
+  return {"msg": 'You have logged in before'}
   
 @app.delete('/api/comment', tags=['comments'])
 def delete_comment(req: Request, comment_id, res: Response):
@@ -60,4 +61,17 @@ def comment_by_post(post_id):
     if n['post'] == post_id:
       comments.append(n)
   return comments
-  
+
+
+@app.post('/api/comment/reply', tags=['comments'])
+def reply(comment_id, res: Response, req: Request, comment: Comment):
+  TOKENS = token.tokens_required(res, req)
+  thread_comment = crud_comments.get_id(comment_id)
+
+  if TOKENS:
+    threads = thread_comment['thread']
+    threads.append(comment_payload(TOKENS['access'], '', comment.content))
+    crud_comments.update(comment_id, {'thread': threads})
+    return {"msg": "Reply was published"}
+  return {"msg": "You have logged in before"}
+

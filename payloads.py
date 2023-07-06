@@ -23,14 +23,15 @@ def post_payload(author_id, title, content: list):
   }
   return post
 
-def comment_payload(author_id, post, content):
+def comment_payload(author_id, post_id, content):
   comment = {
     'author': author_id,
-    'post': post,
+    'post': post_id,
     'date': str(datetime.now()).split(' ')[0],
     'content': content,
     'likes': [],
-    'dislikes': []
+    'dislikes': [],
+    'thread': []
   }
   return comment
 
