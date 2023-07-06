@@ -40,7 +40,7 @@ now_time = str(datetime.now()).split(" ")[0].split("-")
 now_time_iso = datetime.now().isoformat()
 
 
-query_params = {"search": (str, ''), "sortBy": (str, ''), "page": (int, 1), "limit": (int, 20)}
+query_params = {"search": (str, ''), "sortBy": (str, 'all_time'), "page": (int, 1), "limit": (int, 20)}
 query_model = create_model("Query", **query_params)
 
 def convert_data(db):
@@ -65,34 +65,36 @@ class Sort:
       # self.data = convert_data(self.db.find({ "$text": { "$search": // } }).sort('date', pymongo.ASCENDING))
 
   def sortPosts(self):
-    sortBy = {
+    sortDate = {
+      # by date
+      'all_time': {'$gt': f'1600-01-01T00:00:00.000000', '$lt': f'3000-01-01T00:00:00.000000'},
       'date_year': {'$gt': f'{now_time[0]}-01-01T00:00:00.000000', '$lt': now_time_iso},
       'date_month': {'$gt': f'{now_time[0]}-{now_time[1]}-01T00:00:00.000000', '$lt': now_time_iso},
-      'date_day': {'$gt': f'{now_time[0]}-{now_time[1]}-{now_time[2]}T00:00:00.000000', '$lt': now_time_iso}
-    }  
-    self.db.create_index([('title' , pymongo.TEXT), ('content' , pymongo.TEXT), ('date', pymongo.TEXT)])
+      'date_day': {'$gt': f'{now_time[0]}-{now_time[1]}-{now_time[2]}T00:00:00.000000', '$lt': now_time_iso},
 
-    if len(self.search) and not len(self.sortBy):
+    } 
+    sortPopular = {
+      'popular_day': sorted(convert_data(self.db.find({'date': sortDate['date_day']})), key=lambda item: item['views'], reverse=True),
+      'popular_month': sorted(convert_data(self.db.find({'date': sortDate['date_month']})), key=lambda item: item['views'], reverse=True),
+      'popular_year': sorted(convert_data(self.db.find({'date': sortDate['date_year']})), key=lambda item: item['views'], reverse=True),
+      'popular': sorted(self.data, key=lambda item: item['views'], reverse=True),
+    }
+    self.db.create_index([('title' , pymongo.TEXT), ('content' , pymongo.TEXT), ('date', pymongo.TEXT), ('views', pymongo.TEXT)])
+    
+    if self.sortBy in sortDate.keys():
       self.data = convert_data(self.db.find({
-        '$or': [
-          { "title": { "$regex": f"{self.search}", '$options': 'i' } },
-          { "content": { "$regex": f"{self.search}", '$options': 'i' } }
-        ]
-      }))
+          '$and': [
+            {'$or': [
+              { "title": { "$regex": self.search, '$options': 'i' } },
+              { "content": { "$regex": self.search, '$options': 'i' } }
+            ]},
+            {'date': sortDate[self.sortBy]},
+          ]
+        }))
+    else:
+      self.data = sortPopular[self.sortBy]
+    
 
-    if not len(self.search) and len(self.sortBy):
-      self.data = convert_data(self.db.find({'date': sortBy[self.sortBy]}))
-
-    if len(self.search) and len(self.sortBy):
-      self.data = convert_data(self.db.find({
-        '$and': [
-          {'$or': [
-            { "title": { "$regex": f"{self.search}", '$options': 'i' } },
-            { "content": { "$regex": f"{self.search}", '$options': 'i' } }
-          ]},
-          {'date': sortBy[self.sortBy]}
-        ]
-      }))
     # the final list with results
     data = []
     for n in range(0, math.ceil(len(self.data)/self.limit)):

@@ -1,6 +1,4 @@
 # The token module 
-
-
 from config import *
 import time
 import jwt

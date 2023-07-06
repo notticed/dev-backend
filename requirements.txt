@@ -5,3 +5,5 @@ PyJWT
 pymongo
 bcrypt
 uvicorn
+requests
+python-multipart

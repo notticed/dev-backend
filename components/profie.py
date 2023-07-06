@@ -10,11 +10,8 @@ crud_users = CRUD(users)
 #     return crud_users.delete({'_id': ObjectId(user_id)})
 #   return {'msg': 'You do not have permission for this'}
 
-@app.get('/api/user', tags=['user'])
-def all_users():
-  return crud_users.get_all()
 
-@app.get('/api/@{nick}', tags=['user'])
+@app.get('/api/@{nick}', tags=['profile'])
 def user_nick(nick):
   try:
     result = users.find_one({'nick': nick})
