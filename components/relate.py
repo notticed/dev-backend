@@ -5,30 +5,30 @@ from tokens import *
 
 @app.post('/api/follow', tags=['relate'])
 def follow(author_id, req: Request, res: Response):
-  TOKEN = token.tokens_required(res, req)
   author_payload = subs.find_one({'author': author_id})
 
-  if TOKEN and author_payload:
-    follower_payload = subs.find_one({'author': TOKEN['access']})
+  if author_payload:
+    follower_payload = subs.find_one({'author': token.tokens(res, req)})
 
     author_followers = author_payload['followers']
     follower_subscribers = follower_payload['subscribers']
     
-    if TOKEN['access'] not in author_followers:
-      author_followers.append(TOKEN['access'])
+    if token.tokens(res, req) not in author_followers:
+      author_followers.append(token.tokens(res, req))
       follower_subscribers.append(author_id)
       subs.update_one({'author': str(author_payload['author'])}, { "$set": { 'followers': author_followers } }, upsert=False) 
-      subs.update_one({'author': str(TOKEN['access'])}, { "$set": { 'subscribers': follower_subscribers } }, upsert=False)  
-      return {'msg': 'You followed'}
-    elif TOKEN['access'] in author_followers:
-      author_followers.remove(TOKEN['access'])
+      subs.update_one({'author': str(token.tokens(res, req))}, { "$set": { 'subscribers': follower_subscribers } }, upsert=False)  
+      return 'You followed'
+    elif token.tokens(res, req) in author_followers:
+      author_followers.remove(token.tokens(res, req))
       follower_subscribers.remove(author_id)
       subs.update_one({'author': str(author_payload['author'])}, { "$set": { 'followers': author_followers } }, upsert=False) 
-      subs.update_one({'author': str(TOKEN['access'])}, { "$set": { 'subscribers': follower_subscribers } }, upsert=False)  
-      return {'msg': 'You unfollowed'}
+      subs.update_one({'author': str(token.tokens(res, req))}, { "$set": { 'subscribers': follower_subscribers } }, upsert=False)  
+      return 'You unfollowed'
     else:
-      return {'msg': 'Something went wrong'}
-  return {'msg': 'Something went wrong'}
+      return 'Something went wrong'
+  else:
+    return'Author not found'
 
 
 @app.get('/api/follow', tags=['relate'])
@@ -38,7 +38,7 @@ def followers(author_id):
     res['_id'] = str(res['_id'])
     return res
   except:
-    return {'msg': 'Something went wrong'}
+    return 'Something went wrong'
 
 
 

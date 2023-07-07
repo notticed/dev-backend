@@ -5,25 +5,36 @@ import jwt
 from jwt.exceptions import ExpiredSignatureError
 
 # JWT token config
-ACCESS_TOKEN_EXPIRE_DELTA = 900.0
+ACCESS_TOKEN_EXPIRE_DELTA = 10.0
 REFRESH_TOKEN_EXPIRE_DELTA = 2592000.0
 SECRET_KEY = 'secret'
 ALGORITHM = 'HS256'
 
 class Token():
-  def tokens_required(self, res, req):
+
+  def auth_token(self, res, req):
+    access_token = req.cookies.get('access_token_cookie')
+    refresh_token = req.cookies.get('refresh_token_cookie')
+
+    if access_token and refresh_token:
+      raise HTTPException(status_code=403, detail='You already logged in')
+    self.tokenAccess(access_token, res),
+    self.tokenRefresh(refresh_token, res)
+
+  def tokens(self, res, req):
     access_token = req.cookies.get('access_token_cookie')
     refresh_token = req.cookies.get('refresh_token_cookie')
     
+      
     if not access_token and not refresh_token:
-      return False
-    else:
-      tokens = {
-        'refresh': self.tokenRefresh(refresh_token, res),
-        'access': self.tokenAccess(access_token, res)['user_id']
-      }
+      raise HTTPException(status_code=401, detail='You have to sign in before')
     
-      return tokens
+    tokens = {
+      'access': self.tokenAccess(access_token, res)['user_id'],
+      'refresh': self.tokenRefresh(refresh_token, res)
+    }
+    return tokens['access']
+
   # return access_token
   def create_access_token(self, user_id):
     access_token = jwt.encode({
@@ -39,23 +50,24 @@ class Token():
     }, SECRET_KEY, algorithm=ALGORITHM)
     return refresh_token
   
-  def tokenRefresh(self, refresh_token, res: Response):
+  def tokenRefresh(self, refresh_token, res):
     if refresh_token:
       try:
         return jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
-      except:
+      except ExpiredSignatureError:
         new_refresh_token = self.create_refresh_token()
         res.set_cookie(key="refresh_token_cookie", value=new_refresh_token)
         return jwt.decode(new_refresh_token, SECRET_KEY, algorithms=ALGORITHM)
+
     
-  def tokenAccess(self, access_token, res: Response):
+  def tokenAccess(self, access_token, res):
     if access_token:
       try:
         return jwt.decode(access_token, SECRET_KEY, algorithms=ALGORITHM)
       except ExpiredSignatureError:
         tokenSplit = access_token.split(".")
         payload = json.loads((base64.b64decode(str(tokenSplit[1]) + "==")).decode("utf-8"))
-        new_accesss_token = self.create_access_token(payload['user_id'])
-        res.set_cookie(key="access_token_cookie", value=new_accesss_token)
-        return jwt.decode(new_accesss_token, SECRET_KEY, algorithms=ALGORITHM)
+        new_access_token = self.create_access_token(payload['user_id'])
+        res.set_cookie(key="access_token_cookie", value=new_access_token)
+        return jwt.decode(new_access_token, SECRET_KEY, algorithms=ALGORITHM)
 token = Token()

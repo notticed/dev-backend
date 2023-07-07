@@ -1,5 +1,5 @@
 # import all necessary libraries for project
-from fastapi import FastAPI, Depends, Request, Response, File, UploadFile
+from fastapi import FastAPI, Depends, Request, Response, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_jwt_auth import AuthJWT
@@ -93,7 +93,7 @@ class CRUD:
       result_id['_id'] = str(result_id['_id'])
       return result_id
     except: 
-      return {'msg': 'Not found'}
+      return'Not found'
     
   def like(self, user_id, obj_id):
     try:
@@ -107,14 +107,15 @@ class CRUD:
           pass
         likes.append(user_id)
         self.update(obj_id, {'likes': likes})
-        return {'msg': 'Like was set!'}
+        return 'Like was set'
       else:
         likes = self.get_id(obj_id)['likes']
         likes.remove(user_id)
         self.update(obj_id, {'likes': likes})
-        return {'msg': "Like was close"}
+        return 'Like was deleted'
     except:
-      return {'msg': 'Object doesnt have likes'}
+      return 'Something went wrong'
+
 
   def dislike(self, user_id, obj_id):
     try:
@@ -128,14 +129,14 @@ class CRUD:
           pass
         dislikes.append(user_id)
         self.update(obj_id, {'dislikes': dislikes})
-        return {'msg': 'Dislike was set!'}
+        return 'Dislike was set'
       else:
         dislikes = self.get_id(obj_id)['dislikes']
         dislikes.remove(user_id)
         self.update(obj_id, {'dislikes': dislikes})
-        return {'msg': "Dislike was close"}
+        return 'Dislike was deleted'
     except:
-      return {'msg': 'Some error'}
+      return 'Something went wrong'
 
 
 # AuthJWT class settings

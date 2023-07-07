@@ -9,27 +9,19 @@ crud_posts = CRUD(posts)
 
 @app.post('/api/posts', tags=['posts'])
 def create_post(post: Post, req: Request, res: Response):
-  TOKENS = token.tokens_required(res, req)
-  if TOKENS:
-    try:
-      crud_posts.create(post_payload(TOKENS['access'], post.title, post.content))
-      return {'msg': 'Post was published'}
-    except:
-      return {'msg': 'Something went wrong'}
-  return {'msg': 'Log in before'}
+  try:
+    crud_posts.create(post_payload(token.tokens(res, req), post.title, post.content))
+    return 'Post was published'
+  except:
+    return 'Something went wrong'
 
 @app.delete('/api/posts', tags=['posts'])
 def delete_post(post_id, req: Request, res: Response):
-  TOKENS = token.tokens_required(res, req)
-  if TOKENS:
-    if TOKENS['access'] == str(crud_posts.get_id(post_id)['author']):
-      try:
-        crud_posts.delete(post_id)
-        return {'msg': 'Post was deleted'}
-      except:
-        return {'msg': 'Something went wrong'}
-    return {'msg': 'You can not delete not yours post'}
-  return {'msg': 'Log in before'}
+  if token.tokens(res, req) == str(crud_posts.get_id(post_id)['author']):
+    crud_posts.delete(post_id)
+    return 'Post was deleted'
+  return 'You can not delete not yours post'
+
 
 @app.patch('/api/post', tags=['posts'])
 def update_post(post_id):
@@ -37,23 +29,17 @@ def update_post(post_id):
 
 @app.post('/api/posts/like', tags=['posts'])
 def like_post(req: Request, post_id, res: Response):
-  TOKENS = token.tokens_required(res, req)
-  if TOKENS:
-    try:
-      return crud_posts.like(TOKENS['access'], post_id)
-    except: 
-      return {'msg': 'Something went wrong'}
-  return {'msg': 'Log in before'}
+  try:
+    return crud_posts.like(token.tokens(res, req), post_id)
+  except: 
+    return 'Something went wrong'
 
 @app.post('/api/posts/dislike', tags=['posts'])
 def dislike_post(req: Request, post_id, res: Response):
-  TOKENS = token.tokens_required(res, req)
-  if TOKENS:
-    try:
-      return crud_posts.dislike(TOKENS['access'], post_id)
-    except:
-      return {'msg': 'Something went wrong'}
-  return {'msg': "Log in before"}
+  try:
+    return crud_posts.dislike(token.tokens(res, req), post_id)
+  except: 
+    return 'Something went wrong'
 
 
 @app.get('/api/posts/{post_id}', tags=['posts'])
@@ -61,4 +47,4 @@ async def post_id(post_id):
   try:
     return crud_posts.get_id(post_id)
   except:
-    return "Post was not found"
+    return'Post not found'

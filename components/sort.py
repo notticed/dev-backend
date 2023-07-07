@@ -105,7 +105,7 @@ class Sort:
     try:
       return self.data[self.page-1]
     except:
-      return {'msg': 'Page was not found'}
+      return'Page not found'
     
   
   
@@ -122,7 +122,7 @@ class Sort:
     try:
       return self.data[self.page-1]
     except:
-      return {'msg': 'Page was not found'}
+      return'Page not found'
 
 
   def get_sort(self):
