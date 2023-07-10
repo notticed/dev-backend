@@ -1,16 +1,16 @@
 from config import *
 from tokens import *
 from schemes import *
-from payloads import comment_payload
+from payloads import comment_payload, info_payload
 
-
+crud_info = CRUD(info)
 crud_comments = CRUD(comments)
 
 @app.post('/api/comment', tags=['comments'])
 def create_comment(comment: Comment, req: Request, res: Response, post_id):
-
   try:
-    crud_comments.create(comment_payload(token.tokens(res, req), post_id, comment.content))
+    new_comment = crud_comments.create(comment_payload(token.tokens(res, req), post_id, comment.content))
+    crud_info.create(info_payload(new_comment['_id']))
     return 'Comment was published'
   except:
     return 'Something went wrong'
@@ -33,23 +33,23 @@ def update_comment(req: Request, post_id, Authorize: AuthJWT = Depends()):
 def all_comments():
   return crud_comments.get_all()
 
+
+
 @app.post('/api/comment/like', tags=['comments'])
-def like_comment(req: Request, comment_id, res: Response):
+def like(obj_id, res: Response, req: Request):
+  crud_info.like(token.tokens(res, req), obj_id)
+  crud_comments.update(obj_id, {'likes': len(crud_info.get_id(obj_id)['likes'])})
+  crud_comments.update(obj_id, {'dislikes': len(crud_info.get_id(obj_id)['dislikes'])})
+  return 'OK'
 
-  try:
-    return crud_comments.like(token.tokens(res, req), comment_id)
-  except: 
-    return 'Something went wrong'
-
-  
 @app.post('/api/comment/dislike', tags=['comments'])
-def dislike_comment(req: Request, comment_id, res: Response):
+def dislike(obj_id, res: Response, req: Request):
+  crud_info.dislike(token.tokens(res, req), obj_id)
+  crud_comments.update(obj_id, {'dislikes': len(crud_info.get_id(obj_id)['dislikes'])})
+  crud_comments.update(obj_id, {'likes': len(crud_info.get_id(obj_id)['likes'])})
+  return 'OK'
 
-  try:
-    return crud_comments.dislike(token.tokens(res, req), comment_id)
-  except: 
-    return 'Something went wrong'
-  
+
 @app.get('/api/comment/post_id', tags=['comments'])
 def comment_by_post(post_id):
   comments = []
@@ -61,9 +61,7 @@ def comment_by_post(post_id):
 
 @app.post('/api/comment/reply', tags=['comments'])
 def reply(comment_id, res: Response, req: Request, comment: Comment):
-
   thread_comment = crud_comments.get_id(comment_id)
-
   threads = thread_comment['thread']
   threads.append(comment_payload(token.tokens(res, req), '', comment.content))
   return 'Reply was published'

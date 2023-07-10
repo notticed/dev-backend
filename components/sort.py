@@ -123,7 +123,13 @@ class Sort:
       return self.data[self.page-1]
     except:
       return'Page not found'
-
+  
+  def getInfo(self):
+    data = []
+    for n in self.data:
+      n['_id'] = str(n['_id'])
+      data.append(n)
+    return data
 
   def get_sort(self):
     if self.db_type == 'users':
@@ -132,6 +138,8 @@ class Sort:
       return self.sortPosts()
     elif self.db_type == 'comments':
       pass  
+    elif self.db_type == 'info':
+      return self.getInfo()
     else:
       return []
 

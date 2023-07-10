@@ -61,7 +61,7 @@ class CRUD:
       self.collection.insert_one(scheme)
       return self.collection.find_one(scheme)
     except:
-      return False
+      return None
 
   def delete(self, id):
     try:
@@ -94,34 +94,36 @@ class CRUD:
       return result_id
     except: 
       return'Not found'
-    
+
+
   def like(self, user_id, obj_id):
     try:
-      if user_id not in self.get_id(obj_id)['likes']:
-        likes = self.get_id(obj_id)['likes']
-        dislikes = self.get_id(obj_id)['dislikes']
+      obj = self.get_id(obj_id)
+      likes = obj['likes']
+      dislikes = obj['dislikes']
+      if user_id not in likes:
         try:
           dislikes.remove(user_id)
           self.update(obj_id, {'dislikes': dislikes})
         except:
           pass
         likes.append(user_id)
-        self.update(obj_id, {'likes': likes})
+        self.collection.update_one({'_id': ObjectId(obj_id)}, {"$set": {'likes': likes}}, upsert=False)
         return 'Like was set'
       else:
-        likes = self.get_id(obj_id)['likes']
         likes.remove(user_id)
         self.update(obj_id, {'likes': likes})
         return 'Like was deleted'
-    except:
-      return 'Something went wrong'
+    except Exception as _ex:
+      return f'Something went wrong {_ex}'
 
 
   def dislike(self, user_id, obj_id):
     try:
-      if user_id not in self.get_id(obj_id)['dislikes']:
-        dislikes = self.get_id(obj_id)['dislikes']
-        likes = self.get_id(obj_id)['likes']
+      obj = self.get_id(obj_id)
+      likes = obj['likes']
+      dislikes = obj['dislikes']
+      if user_id not in dislikes:
         try:
           likes.remove(user_id)
           self.update(obj_id, {'likes': likes})
@@ -131,12 +133,18 @@ class CRUD:
         self.update(obj_id, {'dislikes': dislikes})
         return 'Dislike was set'
       else:
-        dislikes = self.get_id(obj_id)['dislikes']
         dislikes.remove(user_id)
         self.update(obj_id, {'dislikes': dislikes})
         return 'Dislike was deleted'
     except:
       return 'Something went wrong'
+
+  def _views(self, post_id, user_id):
+    views = self.get_id(post_id)['views']
+    if user_id not in views:
+      views.append(user_id)
+      self.update(post_id, {'views': views})
+    return 'ok'
 
 
 # AuthJWT class settings

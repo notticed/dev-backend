@@ -10,3 +10,5 @@ users = db['users']
 posts = db['posts']
 comments = db['comments']
 subs = db['subs']
+# more info about posts and comments: likes/dislikes, views
+info = db['info']
