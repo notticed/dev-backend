@@ -21,4 +21,4 @@ COPY . /app/
 EXPOSE 8000
 
 # Запускаем Uvicorn при старте контейнера
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8888"]
