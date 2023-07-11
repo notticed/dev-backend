@@ -16,7 +16,7 @@ class Login(BaseModel):
 # Scheme for post
 class Post(BaseModel):
   title: str
-  content: list = []
+  content: str
 
 
 # Scheme for comment
