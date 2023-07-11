@@ -14,7 +14,7 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 #     RefreshTokenRequired,
 #     FreshTokenRequired
 # )
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 from connection import *
 from fastapi.middleware.cors import CORSMiddleware
 from hashing import *
